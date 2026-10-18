@@ -1,0 +1,15 @@
+[[media]]
+file = "battle.json.gz"
+name = "Wave one coming apart around the star"
+
+[[media]]
+file = "torpedo.json.gz"
+name = "A guided torpedo breaking a Large rock"
+
+[[media]]
+file = "saucer.json.gz"
+name = "The saucer arrives to hunt"
+
+[[media]]
+file = "title.png"
+name = "The title screen"

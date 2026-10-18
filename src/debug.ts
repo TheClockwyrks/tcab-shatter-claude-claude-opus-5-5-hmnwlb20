@@ -7,8 +7,6 @@
 import type { DeepReadonly } from "ts-essentials";
 import {
   BULLET_LIFE,
-  FIELD_H,
-  FIELD_W,
   ROCK_HEALTH,
   ROCK_RADIUS,
   type RockSize,
@@ -34,7 +32,6 @@ import {
   makeSaucer,
   thaw,
 } from "./world";
-import { wrapCoord } from "./vec";
 
 type View = DeepReadonly<ShatterState>;
 
@@ -216,8 +213,8 @@ export function createDebugApi(): ShatterDebugApi {
       ...thaw(s),
       ship: {
         ...s.ship,
-        x: wrapCoord(num("setShipPosition", "x", x), FIELD_W),
-        y: wrapCoord(num("setShipPosition", "y", y), FIELD_H),
+        x: num("setShipPosition", "x", x),
+        y: num("setShipPosition", "y", y),
       },
     }),
     setShipVelocity: (s, vx, vy) => ({
@@ -249,8 +246,8 @@ export function createDebugApi(): ShatterDebugApi {
       const op = "addBullet";
       const b = {
         id: s.nextId,
-        x: wrapCoord(num(op, "x", x), FIELD_W),
-        y: wrapCoord(num(op, "y", y), FIELD_H),
+        x: num(op, "x", x),
+        y: num(op, "y", y),
         vx: num(op, "vx", vx),
         vy: num(op, "vy", vy),
         life: BULLET_LIFE,
@@ -266,8 +263,8 @@ export function createDebugApi(): ShatterDebugApi {
       const op = "addEnemyBullet";
       const b = {
         id: s.nextId,
-        x: wrapCoord(num(op, "x", x), FIELD_W),
-        y: wrapCoord(num(op, "y", y), FIELD_H),
+        x: num(op, "x", x),
+        y: num(op, "y", y),
         vx: num(op, "vx", vx),
         vy: num(op, "vy", vy),
         life: SAUCER_BULLET_LIFE,
@@ -332,8 +329,8 @@ export function createDebugApi(): ShatterDebugApi {
 
     addSaucer: (s, x, y) => {
       const op = "addSaucer";
-      const base = makeSaucer(s.nextId, "left", num(op, "y", y), 1);
-      const saucer = { ...base, x: wrapCoord(num(op, "x", x), FIELD_W) };
+      const base = makeSaucer(s.nextId, "left", 0, 1);
+      const saucer = { ...base, x: num(op, "x", x), y: num(op, "y", y) };
       return { ...thaw(s), saucer, nextId: s.nextId + 1 };
     },
     setSaucerVelocity: (s, vx, vy) =>
@@ -410,8 +407,8 @@ export function createDebugApi(): ShatterDebugApi {
       const h = num(op, "heading", heading);
       const t = {
         id: s.nextId,
-        x: wrapCoord(num(op, "x", x), FIELD_W),
-        y: wrapCoord(num(op, "y", y), FIELD_H),
+        x: num(op, "x", x),
+        y: num(op, "y", y),
         vx: Math.cos(h) * TORPEDO_SPEED,
         vy: Math.sin(h) * TORPEDO_SPEED,
         heading: h,

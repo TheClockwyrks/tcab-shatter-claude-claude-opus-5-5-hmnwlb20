@@ -179,7 +179,25 @@ function drawRock(ctx: Ctx, r: DeepReadonly<RockState>, dimmed = false): void {
     const red = Math.round(125 + damage * 70);
     const green = Math.round(115 - damage * 45);
     const blue = Math.round(104 - damage * 50);
-    ctx.fillStyle = r.flash > 0 ? "#ffffff" : `rgb(${red}, ${green}, ${blue})`;
+    if (r.flash > 0) {
+      ctx.fillStyle = "#ffffff";
+    } else {
+      // A soft top-lit shading, for a little depth.
+      const shade = ctx.createRadialGradient(
+        -radius * 0.35,
+        -radius * 0.35,
+        radius * 0.1,
+        0,
+        0,
+        radius * 1.1,
+      );
+      shade.addColorStop(0, `rgb(${red + 40}, ${green + 38}, ${blue + 34})`);
+      shade.addColorStop(
+        1,
+        `rgb(${Math.round(red * 0.55)}, ${Math.round(green * 0.55)}, ${Math.round(blue * 0.6)})`,
+      );
+      ctx.fillStyle = shade;
+    }
     ctx.fill();
     ctx.lineWidth = 2;
     ctx.strokeStyle =
@@ -365,8 +383,8 @@ function drawRound(
       const c = path[i];
       if (!a || !c) continue;
       const f = 1 - (i - 1) / Math.max(1, TRAIL_TICKS);
-      ctx.strokeStyle = `rgba(${trail}, ${(0.85 * f * f).toFixed(3)})`;
-      ctx.lineWidth = Math.max(0.4, radius * 1.8 * f);
+      ctx.strokeStyle = `rgba(${trail}, ${(0.95 * f * f).toFixed(3)})`;
+      ctx.lineWidth = Math.max(0.5, radius * 2.2 * f);
       ctx.beginPath();
       ctx.moveTo(x + c[0], y + c[1]);
       ctx.lineTo(x + a[0], y + a[1]);
@@ -387,38 +405,52 @@ function drawTorpedo(
   tp: DeepReadonly<TorpedoState>,
   t: number,
 ): void {
-  wrapped(tp.x, tp.y, 30, (x, y) => {
+  wrapped(tp.x, tp.y, 40, (x, y) => {
     ctx.save();
     ctx.translate(x, y);
+    // A hot glow around the warhead, so it never reads as a round.
+    const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, 22);
+    glow.addColorStop(0, "rgba(255, 190, 80, 0.55)");
+    glow.addColorStop(1, "rgba(255, 120, 30, 0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(0, 0, 22, 0, Math.PI * 2);
+    ctx.fill();
     ctx.rotate(tp.heading);
     // Exhaust plume.
-    const len = 18 + 6 * Math.sin(t * 50);
-    const plume = ctx.createLinearGradient(-6, 0, -6 - len, 0);
-    plume.addColorStop(0, "rgba(255, 240, 180, 0.95)");
-    plume.addColorStop(1, "rgba(255, 90, 20, 0)");
+    const len = 26 + 8 * Math.sin(t * 50);
+    const plume = ctx.createLinearGradient(-10, 0, -10 - len, 0);
+    plume.addColorStop(0, "rgba(255, 245, 200, 1)");
+    plume.addColorStop(0.35, "rgba(255, 150, 40, 0.8)");
+    plume.addColorStop(1, "rgba(255, 60, 20, 0)");
     ctx.fillStyle = plume;
     ctx.beginPath();
-    ctx.moveTo(-6, -4);
-    ctx.lineTo(-6 - len, 0);
-    ctx.lineTo(-6, 4);
+    ctx.moveTo(-10, -5);
+    ctx.lineTo(-10 - len, 0);
+    ctx.lineTo(-10, 5);
     ctx.closePath();
     ctx.fill();
-    // Body.
+    // Body: a finned warhead roughly twice the ship's bullet in every way.
     ctx.shadowColor = COLOR.torpedo;
-    ctx.shadowBlur = 18;
+    ctx.shadowBlur = 16;
     ctx.fillStyle = COLOR.torpedo;
     ctx.beginPath();
-    ctx.moveTo(TORPEDO_R + 6, 0);
-    ctx.lineTo(0, TORPEDO_R - 1);
-    ctx.lineTo(-7, TORPEDO_R - 1);
-    ctx.lineTo(-7, -(TORPEDO_R - 1));
-    ctx.lineTo(0, -(TORPEDO_R - 1));
+    ctx.moveTo(TORPEDO_R + 9, 0);
+    ctx.lineTo(TORPEDO_R, TORPEDO_R - 1);
+    ctx.lineTo(-8, TORPEDO_R - 1);
+    ctx.lineTo(-12, TORPEDO_R + 3);
+    ctx.lineTo(-12, -(TORPEDO_R + 3));
+    ctx.lineTo(-8, -(TORPEDO_R - 1));
+    ctx.lineTo(TORPEDO_R, -(TORPEDO_R - 1));
     ctx.closePath();
     ctx.fill();
     ctx.shadowBlur = 0;
-    ctx.fillStyle = tp.homing ? "#ff3b1f" : "#7a5a30";
+    ctx.strokeStyle = "#fff1c9";
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+    ctx.fillStyle = tp.homing ? "#ff2d1a" : "#7a5a30";
     ctx.beginPath();
-    ctx.arc(TORPEDO_R + 1, 0, 2.2, 0, Math.PI * 2);
+    ctx.arc(TORPEDO_R + 3, 0, 2.6, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   });
